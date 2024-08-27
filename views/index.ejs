@@ -1,0 +1,125 @@
+<%- include('partials/header.ejs') %>
+<div class="search-container">
+    <form action="/search" method="GET">
+        <input type="text" name="search_query" placeholder="Buscar por nome do cliente / Voltar Lista (ENTER)">
+        <button type="submit" class="btn btn-primary">Buscar Cliente</button>
+    </form>
+
+    <form action="/searchByUser" method="GET" class="search-by-user-form">
+        <div class="search-by-user-wrapper">
+            <select name="username" class="form-control">
+                <option>Selecione um Usuário</option>
+                <% users.forEach(function(user) { %>
+                    <option value="<%= user.username %>"><%= user.username %></option>
+                <% }); %>
+            </select>        
+            <button type="submit" class="btn btn-primary search-button">Buscar Usuário</button>
+        </div>
+    </form>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nome Cliente</th>
+            <th>Tipo de Corte</th>
+            <th>Data</th>
+            <th>Horas</th>
+            <th>Preço</th>
+            <th>Profissional</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (cliente && cliente.length > 0) { %>
+            <% cliente.forEach(function(e) { %>
+            <tr>
+                <%
+            function formatDate(date) {
+                const d = new Date(date);
+                const day = d.getUTCDate().toString().padStart(2, '0');
+                const month = (d.getUTCMonth() + 1).toString().padStart(2, '0'); // Meses são de 0 a 11
+                const year = d.getUTCFullYear();
+                return `${day}/${month}/${year}`;
+            }
+            %>  
+                <td><%= e.nome_cliente %></td>
+                <td><%= e.tipo %></td>
+                <td><%= formatDate(e.data) %></td>
+                <td><%= e.horas %></td>
+                <td><%= e.preco %></td>
+                <td><%= e.usuario.username %></td>
+                <td>
+                    <a href="/edit/<%= e._id %>" class="btn btn-primary btn-sm">Editar</a>
+                    <a href="/delete/<%= e._id %>" class="btn btn-success btn-sm">Finalizado</a>
+                    <a href="/view/<%= e._id %>" class="btn btn-warning btn-sm">Gerar Comprovante</a>
+                </td>
+            </tr>
+            <% }); %>
+        <% } else { %>
+            <tr>
+                <td colspan="7" class="text-center">Nenhum cliente encontrado.</td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+<div class="d-flex justify-content-center mb-2">
+    <a href="/add" class="btn btn-primary btn-sm px-4">+ Agendar</a>
+</div>
+<div class="d-flex justify-content-center mb-2">
+    <button id="download-pdf" class="btn btn-secondary btn-sm px-3">Baixar Tabela em PDF</button>
+</div>
+
+<% if (typeof success_msg !== 'undefined' && success_msg) { %>
+    <div class="alert alert-success w-75 mx-auto text-center"><%= success_msg %></div>
+<% } %>  
+
+<!-- Elemento invisível que carrega os dados -->
+<div id="clienteData" data-cliente='<%= JSON.stringify(cliente).replace(/'/g, "\\'") %>' style="display: none;"></div>
+
+<script>
+    // Obtém os dados do atributo data-cliente
+    const clienteDataElement = document.getElementById('clienteData');
+    const clienteData = JSON.parse(clienteDataElement.getAttribute('data-cliente').replace(/&apos;/g, "'"));
+
+    document.getElementById('download-pdf').addEventListener('click', function() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Cabeçalho da tabela
+        doc.text('Nome Cliente', 10, 10);
+        doc.text('Tipo de Corte', 50, 10);
+        doc.text('Data', 90, 10);
+        doc.text('Horas', 120, 10);
+        doc.text('Preço', 150, 10);
+        doc.text('Profissional', 180, 10);
+        doc.text('Modificações', 220, 10);
+
+        // Dados da tabela
+        let startY = 20;
+        clienteData.forEach(function(e, index) {
+            doc.text(e.nome_cliente, 10, startY + (index * 10));
+            doc.text(e.tipo, 50, startY + (index * 10));
+            doc.text(formatDate(e.data), 90, startY + (index * 10));
+            doc.text(e.horas, 120, startY + (index * 10));
+            doc.text(e.preco, 150, startY + (index * 10));
+            doc.text(e.usuario.username, 180, startY + (index * 10));
+            doc.text('Editar | Excluir | Gerar Comprovante', 220, startY + (index * 10));
+        });
+
+        // Função para formatar a data
+        function formatDate(date) {
+            const d = new Date(date);
+            const day = d.getUTCDate().toString().padStart(2, '0');
+            const month = (d.getUTCMonth() + 1).toString().padStart(2, '0'); // Meses são de 0 a 11
+            const year = d.getUTCFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // Salva o PDF com o nome 'tabela_clientes.pdf'
+        doc.save('tabela_clientes.pdf');
+    });
+</script>
+<%- include('partials/footer.ejs') %>
+
+

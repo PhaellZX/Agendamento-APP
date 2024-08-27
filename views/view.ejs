@@ -1,0 +1,30 @@
+<%- include('partials/header') %>
+<div class="comprovante-container">
+    <div style="text-align: center;">
+        <h2>Comprovante do Cliente</h2>
+        <div>
+            <%
+            function formatDate(date) {
+                const d = new Date(date);
+                const day = d.getUTCDate().toString().padStart(2, '0');
+                const month = (d.getUTCMonth() + 1).toString().padStart(2, '0');
+                const year = d.getUTCFullYear();
+                return `${day}/${month}/${year}`;
+            }
+            %>       
+            <strong>Nome:</strong> <%= cliente.nome_cliente %><br>
+            <strong>Tipo de Corte:</strong> <%= cliente.tipo %><br>
+            <strong>Data:</strong> <%= formatDate(cliente.data) %><br>
+            <strong>Horas:</strong> <%= cliente.horas %><br>
+            <strong>Profissional:</strong> <%= cliente.usuario.username %><br>
+            <strong>Preço:</strong> <%= cliente.preco %>
+        </div>
+    </div>
+    <a href="/index">Voltar</a>
+    <a id="convertButton" href="#">Baixar</a>
+</div>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script src="/js/script.js"></script>
+
+
+

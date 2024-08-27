@@ -1,0 +1,37 @@
+<%- include('partials/header.ejs') %>
+    <h1 style="text-align: center;">Editar Agendamento</h1>
+    <form action="/edit/<%= cliente._id %>" method="post" class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <input type="text" name="nome_cliente" id="nome_cliente" placeholder="Nome do cliente" class="form-control" value="<%= cliente.nome_cliente %>" required>
+            </div>
+            <div class="col-md-6">
+                <input type="text" name="tipo" id="tipo" placeholder="Tipo de corte" class="form-control" value="<%= cliente.tipo %>" required>
+            </div>
+            <div class="col-md-6">
+                <input type="date" name="data" id="data" class="form-control" value="<%= cliente.data.toISOString().split('T')[0] %>" required>
+            </div>
+            <div class="col-md-6">
+                <input type="text" name="horas" id="horas" class="form-control" value="<%= cliente.horas %>" required>
+            </div>
+            <div class="col-md-6">
+                <input type="text" name="preco" id="preco" placeholder="Preço" class="form-control" value="<%= cliente.preco %>" required>
+            </div>
+        </div>
+        <br>
+        <div class="d-flex justify-content-center">
+            <button type="submit" class="btn btn-block btn-primary">Alterar</button>
+        </div>
+    </form>
+    <div class="col-xs-12">
+        <br>
+        <p style="text-align: center;"><a class="btn btn-secondary" href="/index">Voltar</a></p>
+    </div>
+
+<script>
+    // Obter a data atual
+    var dataAtual = new Date().toISOString().split('T')[0];
+
+    // Definir o valor mínimo da entrada de data como a data atual
+    document.getElementById('data').setAttribute('min', dataAtual);
+</script>

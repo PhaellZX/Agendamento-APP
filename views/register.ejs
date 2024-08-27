@@ -1,0 +1,57 @@
+<%- include('partials/header.ejs') %>
+<div class="container text-center mt-4">
+    <h4 class="mb-4">Registrar Novo Usuário</h4>
+    <form method="POST" action="/register" class="mb-4">
+        <div class="mb-3">
+            <input type="text" id="username" name="username" class="form-control w-50 mx-auto" placeholder="Nome de usuário" required>
+        </div>
+        <div class="mb-3">
+            <input type="password" id="password" name="password" class="form-control w-50 mx-auto" placeholder="Senha" required>
+        </div>
+        <div class="mb-3">
+            <input type="password" id="confirm_password" name="confirm_password" class="form-control w-50 mx-auto" placeholder="Confirmar senha" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Cadastrar</button>
+    </form>
+
+    <h2 class="mb-4">Usuários Registrados</h2>
+    <table class="table table-striped w-75 mx-auto">
+        <thead>
+            <tr>
+                <th>Nome de Usuário</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% users.forEach(function(user) { %>
+                <tr>
+                    <td><%= user.username %></td>
+                    <td>
+                        <form method="POST" action="/deleteUser/<%= user._id %>" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Deletar</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+    <!-- Exibe mensagens de erro ou sucesso abaixo da tabela -->
+    <% if (typeof error_msg !== 'undefined' && error_msg.length > 0) { %>
+        <div class="alert alert-danger mt-3 w-50 mx-auto" role="alert">
+            <%= error_msg %>
+        </div>
+    <% } %>
+
+    <% if (typeof success_msg !== 'undefined' && success_msg.length > 0) { %>
+        <div class="alert alert-success mt-3 w-50 mx-auto" role="alert">
+            <%= success_msg %>
+        </div>
+    <% } %>
+
+    <p class="mt-4">
+        <a href="/index" class="btn btn-secondary">Voltar</a>
+    </p>
+</div>
+
+<%- include('partials/footer.ejs') %>
