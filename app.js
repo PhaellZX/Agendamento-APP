@@ -30,7 +30,7 @@ app.use(session({
     saveUninitialized: true,
     store: MongoStore.create({ mongoUrl: `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.u6bk12m.mongodb.net/site` }),
 }));
-
+     
 // Configuração do flash    
 app.use(flash());
 
@@ -56,4 +56,4 @@ app.use('/', clienteRoutes);
 
 app.listen(3000, () => {
     console.log('Servidor rodando na porta 3000');
-});
+ });
