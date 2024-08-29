@@ -1,5 +1,6 @@
 <%- include('partials/header.ejs') %>
 <div class="container text-center mt-4">
+    
     <h4 class="mb-4">Registrar Novo Usuário</h4>
     <form method="POST" action="/register" class="mb-4">
         <div class="mb-3">
@@ -42,7 +43,6 @@
             <%= error_msg %>
         </div>
     <% } %>
-
     <% if (typeof success_msg !== 'undefined' && success_msg.length > 0) { %>
         <div class="alert alert-success mt-3 w-50 mx-auto" role="alert">
             <%= success_msg %>

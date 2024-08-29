@@ -9,8 +9,7 @@ function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
         return next();
     }
-    req.flash('error_msg', 'Você precisa estar logado para acessar esta página.');
-    res.redirect('/login');
+    return res.render('login', { error_msg: 'Você precisa estar logado para acessar esta página.'});
 }
 
 // Configuração do Passport
@@ -59,9 +58,7 @@ router.post('/login', (req, res, next) => {
             return next(err);
         }
         if (!user) {
-            req.flash('error_msg', 'Usuário ou Senha inválido!');
-            console.log(req.flash('error_msg'));
-            return res.redirect('/login');
+            return res.render('login', { error_msg: 'Usuário ou senha incorretos' });
         }
         req.logIn(user, (err) => {
             if (err) {
@@ -84,7 +81,7 @@ router.get('/logout', (req, res, next) => {
 });
 
 // Página de registro
-router.get('/register', async (req, res) => {
+router.get('/register', ensureAuthenticated, async (req, res) => {
     const users = await User.find();
     res.render('register', {
         current_user: req.user || null,
@@ -94,23 +91,51 @@ router.get('/register', async (req, res) => {
     });
 });
 
-router.post('/deleteUser/:id', async (req, res) => {
+router.post('/deleteUser/:id', ensureAuthenticated, async (req, res) => {
     try {
         await User.findByIdAndDelete(req.params.id);
         req.flash('success_msg', 'Usuário deletado com sucesso.');
+
+        // Busque todos os usuários novamente após a exclusão
+        const users = await User.find();
+
+        // Renderiza a página de registro com as mensagens de sucesso e os usuários atualizados
+        return res.render('register', {
+            current_user: req.user || null,
+            users,
+            error_msg: req.flash('error_msg'),
+            success_msg: req.flash('success_msg')
+        });
     } catch (err) {
         req.flash('error_msg', 'Erro ao deletar usuário.');
+
+        // Em caso de erro, renderiza a página de registro com a mensagem de erro
+        return res.render('register', {
+            current_user: req.user || null,
+            users: await User.find(),
+            error_msg: req.flash('error_msg'),
+            success_msg: req.flash('success_msg')
+        });
     }
-    res.redirect('/register');
 });
 
 // Processa o registro de usuário
-router.post('/register', async (req, res) => {
+router.post('/register', ensureAuthenticated, async (req, res) => {
     const { username, password, confirm_password } = req.body;
 
     if (password !== confirm_password) {
         req.flash('error_msg', 'As senhas não conferem.');
-        return res.redirect('/register');
+
+        // Busque todos os usuários novamente após a falha no registro
+        const users = await User.find();
+
+        // Renderiza a página de registro com a mensagem de erro e os usuários atuais
+        return res.render('register', {
+            current_user: req.user || null,
+            users,
+            error_msg: req.flash('error_msg'),
+            success_msg: req.flash('success_msg')
+        });
     }
 
     try {
@@ -118,7 +143,17 @@ router.post('/register', async (req, res) => {
 
         if (existingUser) {
             req.flash('error_msg', 'Nome de usuário já está em uso.');
-            return res.redirect('/register');
+
+            // Busque todos os usuários novamente após a falha no registro
+            const users = await User.find();
+
+            // Renderiza a página de registro com a mensagem de erro e os usuários atuais
+            return res.render('register', {
+                current_user: req.user || null,
+                users,
+                error_msg: req.flash('error_msg'),
+                success_msg: req.flash('success_msg')
+            });
         }
 
         const newUser = new User({
@@ -129,11 +164,31 @@ router.post('/register', async (req, res) => {
         await newUser.save();
 
         req.flash('success_msg', 'Você está registrado e pode fazer login.');
-        res.redirect('/register');
+
+        // Busque todos os usuários novamente após o registro bem-sucedido
+        const users = await User.find();
+
+        // Renderiza a página de registro com a mensagem de sucesso e os usuários atualizados
+        return res.render('register', {
+            current_user: req.user || null,
+            users,
+            error_msg: req.flash('error_msg'),
+            success_msg: req.flash('success_msg')
+        });
     } catch (err) {
         console.error(err);
         req.flash('error_msg', 'Erro ao registrar usuário.');
-        res.redirect('/register');
+
+        // Busque todos os usuários novamente após a falha no registro
+        const users = await User.find();
+
+        // Renderiza a página de registro com a mensagem de erro e os usuários atuais
+        return res.render('register', {
+            current_user: req.user || null,
+            users,
+            error_msg: req.flash('error_msg'),
+            success_msg: req.flash('success_msg')
+        });
     }
 });
 

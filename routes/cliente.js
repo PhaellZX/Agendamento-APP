@@ -19,11 +19,31 @@ router.post('/add', ensureAuthenticated, async (req, res) => {
         preco: `R$${preco}`,
         usuario: req.user._id
     });
-    await novoCliente.save();
-    req.flash('success_msg', 'Agendamento Concluído!');
-    res.redirect('/index');
-});
 
+    try {
+        await novoCliente.save();
+
+        // Busque todos os usuários do banco de dados
+        const users = await User.find(); 
+
+        // Busque todos os clientes do banco de dados
+        const clientes = await Cliente.find(); 
+
+        // Passe `users`, `clientes`, e `current_user` para a renderização da view
+        return res.render('index', { 
+            success_msg: 'Agendamento Concluído!', 
+            current_user: req.user, 
+            users: users,
+            cliente: clientes // ou `clientes` para manter a consistência
+        });
+    } catch (err) {
+        console.error(err);
+        return res.render('add', { 
+            error_msg: 'Houve um erro ao agendar', 
+            current_user: req.user 
+        });
+    }
+});
 
 router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
     const cliente = await Cliente.findById(req.params.id);
@@ -33,6 +53,8 @@ router.get('/edit/:id', ensureAuthenticated, async (req, res) => {
 router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
     try {
         const { nome_cliente, tipo, data, horas, preco } = req.body;
+
+        // Atualize o cliente pelo ID
         await Cliente.findByIdAndUpdate(req.params.id, {
             nome_cliente,
             tipo,
@@ -41,25 +63,69 @@ router.post('/edit/:id', ensureAuthenticated, async (req, res) => {
             preco,
         }, { new: true });
 
+        // Busque todos os usuários do banco de dados
+        const users = await User.find();
+
+        // Busque todos os clientes do banco de dados
+        const clientes = await Cliente.find();
+
+        // Passe as variáveis para a renderização da view `index.ejs`
         req.flash('success_msg', 'Cliente atualizado com sucesso!');
-        res.redirect('/index');
+        return res.render('index', {
+            success_msg: 'Agendamento atualizado com sucesso!',
+            current_user: req.user,
+            users: users,
+            cliente: clientes // ou `clientes` para manter a consistência
+        });
     } catch (error) {
-        console.error('Erro ao atualizar cliente:', error);
-        req.flash('error_msg', 'Erro ao atualizar o cliente.');
-        res.redirect('/index');
+        console.error('Erro ao atualizar agendamento:', error);
+
+        // Em caso de erro, renderize a página `index.ejs` com uma mensagem de erro
+        req.flash('error_msg', 'Erro ao atualizar o agendamento.');
+        return res.render('index', {
+            error_msg: 'Erro ao atualizar o agendamento.',
+            current_user: req.user,
+            users: await User.find(),
+            cliente: await Cliente.find() // ou `clientes` para manter a consistência
+        });
     }
 });
-
 
 router.get('/delete/:id', ensureAuthenticated, async (req, res) => {
     try {
+        // Exclui o cliente pelo ID
         await Cliente.findByIdAndDelete(req.params.id);
-        req.flash('success_msg', 'Corte Finalizado!');
+
+        // Define a mensagem de sucesso
+        req.flash('success_msg', 'Corte Finalizado');
+
+        // Busque todos os usuários do banco de dados
+        const users = await User.find();
+
+        // Busque todos os clientes restantes do banco de dados
+        const clientes = await Cliente.find();
+
+        // Renderiza a view `index.ejs` com as variáveis necessárias
+        return res.render('index', {
+            success_msg: 'Corte Finalizado!',
+            current_user: req.user,
+            users: users,
+            cliente: clientes // ou `clientes` para manter a consistência
+        });
     } catch (error) {
-        req.flash('error_msg', 'Erro ao excluir o cliente.');
+        console.error('Erro ao excluir agendamento:', error);
+
+        // Em caso de erro, renderiza a view `index.ejs` com uma mensagem de erro
+        req.flash('error_msg', 'Erro ao excluir o agendamento.');
+        return res.render('index', {
+            error_msg: 'Erro ao excluir o agendamento.',
+            current_user: req.user,
+            users: await User.find(),
+            cliente: await Cliente.find() // ou `clientes` para manter a consistência
+        });
     }
-    res.redirect('/index');
 });
+
 
 router.get('/view/:id', ensureAuthenticated, async (req, res) => {
     try {

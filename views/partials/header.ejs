@@ -13,6 +13,7 @@
         <ul class="nav-links">
             <% if (current_user) { %>
                 <li><b>Olá, <%= current_user.username %></b></li>
+                <li><a href="/index">Painel</a></li>
                 <li><a href="/register">Usuários</a></li>
                 <li><a href="/logout">Sair</a></li>
             <% } else { %>

@@ -16,8 +16,12 @@
             <button type="submit" class="btn btn-primary search-button">Buscar Usuário</button>
         </div>
     </form>
+    <br>
+<% if (typeof success_msg !== 'undefined' && success_msg) { %>
+    <div class="alert alert-success w-75 mx-auto text-center"><%= success_msg %></div>
+<% } %>
+<br>
 </div>
-
 <table class="table">
     <thead>
         <tr>
@@ -69,11 +73,6 @@
 <div class="d-flex justify-content-center mb-2">
     <button id="download-pdf" class="btn btn-secondary btn-sm px-3">Baixar Tabela em PDF</button>
 </div>
-
-<% if (typeof success_msg !== 'undefined' && success_msg) { %>
-    <div class="alert alert-success w-75 mx-auto text-center"><%= success_msg %></div>
-<% } %>  
-
 <!-- Elemento invisível que carrega os dados -->
 <div id="clienteData" data-cliente='<%= JSON.stringify(cliente).replace(/'/g, "\\'") %>' style="display: none;"></div>
 
